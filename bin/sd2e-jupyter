@@ -79,11 +79,41 @@ function get_help() {
 }
 
 function do_usage() {
-   echo -e "usage: $_THIS command options\n"
+   echo -e "\nusage: $_THIS command options\n"
    echo -e "  $_THIS show : Show details about your Notebook Server"
    echo -e "  $_THIS start -n NAME -e EMAIL -d DURATION --archive : Launch a Notebook Server"
    echo -e "  $_THIS stop <Session ID> : Shut down your Notebook Server\n"
-   echo -e "Version: $VERSION | Get help at support@sd2e.org"
+   echo -e "Version: $VERSION | Get help at support@sd2e.org\n"
+
+   _do_deps_check
+}
+
+function _do_deps_check() {
+
+    # Check for basic root causes of failure
+
+    if test ! $(which jq) 
+    then
+        die "Dependency 'jq' not installed [https://stedolan.github.io/jq/]"
+    fi
+    
+    if test ! $(which auth-check) 
+    then
+        die "Dependency 'sd2e-cli' not installed [https://github.com/SD2E/sd2e-cli]"
+    fi
+    
+    if test ! -f "$HOME/.agave/current"
+    then
+        die "The sd2e-cli is not configured. Run 'tenants-init' to resolve."
+    fi
+
+    if test ! $(which bashids)
+    then
+        die "Dependency 'bashids' not installed [https://github.com/benwilber/bashids]"
+    fi
+
+    return 0
+
 }
 
 function do_list() {
