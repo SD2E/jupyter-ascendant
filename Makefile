@@ -12,3 +12,8 @@ clean:
 .PHONY: install
 install:
 	install bin/sd2e-jupyter /usr/local/bin
+
+.PHONY: install-user
+install-user:
+	mkdir -p $HOME/bin 
+	install bin/sd2e-jupyter $HOME/bin
