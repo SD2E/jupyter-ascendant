@@ -41,12 +41,12 @@ function _get_username() {
     local uname=$1
     
     debug "_get_username"
-    if [ ! -f "$HOME/.agave/current" ]
+    if [ ! -f "${_AGAVE_AUTH}/current" ]
     then
         die "Agave API client not installed or configured"
     fi
 
-    uname=$(jq -r .username "$HOME/.agave/current")
+    uname=$(jq -r .username "${_AGAVE_AUTH}/current")
 
     echo $uname
 }
@@ -62,12 +62,12 @@ function _get_email() {
         uname=$(_get_username)
     fi
     
-    if [ ! -f "$HOME/.agave/profiles-list-me.json" ]
+    if [ ! -f "${_AGAVE_STORE}/profiles-list-me.json" ]
     then
-        profiles-list -v me > "$HOME/.agave/profiles-list-me.json"
+        profiles-list -v me > "${_AGAVE_STORE}/profiles-list-me.json"
     fi
 
-    email=$(jq -r .email "$HOME/.agave/profiles-list-me.json")
+    email=$(jq -r .email "${_AGAVE_STORE}/profiles-list-me.json")
 
     echo $email
 }
@@ -102,7 +102,7 @@ function _do_deps_check() {
         die "Dependency 'sd2e-cli' not installed [https://github.com/SD2E/sd2e-cli]"
     fi
     
-    if test ! -f "$HOME/.agave/current"
+    if test ! -f "${_AGAVE_AUTH}/current"
     then
         die "The sd2e-cli is not configured. Run 'tenants-init' to resolve."
     fi
@@ -192,7 +192,7 @@ then
     duration="08:00:00"
 fi
 
-cat << EOF > "$HOME/.agave/${_AGAVE_APP}.json"
+cat << EOF > "${_AGAVE_STORE}/${_AGAVE_APP}.json"
 {
   "name": "${jobname}",
   "appId": "${_AGAVE_APP}-${uname}-${VERSION}",
@@ -208,11 +208,11 @@ EOF
 
     if [ "$DEBUG" == 1 ]
     then
-        cat "$HOME/.agave/${_AGAVE_APP}.json" && \
+        cat "${_AGAVE_STORE}/${_AGAVE_APP}.json" && \
         exit 0
     fi
 
-    local _job=$(jobs-submit -v -F $HOME/.agave/${_AGAVE_APP}.json | jq -r .id)
+    local _job=$(jobs-submit -v -F ${_AGAVE_STORE}/${_AGAVE_APP}.json | jq -r .id)
     if [ ! -z "${_job}" ]
     then
         echo "Launching Notebook Server session $_job"
@@ -251,12 +251,20 @@ function refresh_auth() {
             get_help
         fi
    fi
+
+   # Maintain a store directory for non-secret stuff
+   if [ ! -d "${_AGAVE_STORE}" ]
+   then
+        mkdir -p "${_AGAVE_STORE}"
+   fi
    return 0
 }
 
 _THIS=$(basename $0)
-VERSION=0.1.0
+_AGAVE_AUTH="$HOME/.agave"
+_AGAVE_STORE="$HOME/.sd2e.org"
 _AGAVE_APP="jupyter-singularity-maverick"
+VERSION=0.1.0
 UTIL_DIR=
 if [[ -z "$UTIL_DIR" ]]; then
     UTIL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
