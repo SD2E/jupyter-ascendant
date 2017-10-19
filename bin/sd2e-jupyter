@@ -46,7 +46,7 @@ function _get_username() {
         die "Agave API client not installed or configured"
     fi
 
-    uname=$(jq -r .username "$HOME/.sd2e_profile.json")
+    uname=$(jq -r .username "$HOME/.agave/current")
 
     echo $uname
 }
@@ -80,10 +80,10 @@ function get_help() {
 
 function do_usage() {
    echo -e "usage: $_THIS command options\n"
-   echo -e "  $_THIS show - Print your Notebook Server's Session ID"
+   echo -e "  $_THIS show : Show details about your Notebook Server"
    echo -e "  $_THIS start -n NAME -e EMAIL -d DURATION --archive : Launch a Notebook Server"
-   echo -e "  $_THIS stop <Session ID> - Shut down your Notebook Server\n"
-   echo -e "Version: $VERSION | Help: support@sd2e.org"
+   echo -e "  $_THIS stop <Session ID> : Shut down your Notebook Server\n"
+   echo -e "Version: $VERSION | Get help at support@sd2e.org"
 }
 
 function do_list() {
@@ -91,14 +91,28 @@ function do_list() {
     debug "do_list"
 
     local uname=$(_get_username)
-    local nbsrv=$(jobs-search -v "limit=1" "appId.like=${_AGAVE_APP}-${uname}*" | jq -r .[].id | grep -v "^.$")
-    
-    if [ ! -z "$nbsrv" ]
+    local tmp=$(mktemp)
+    jobs-search -v "status=RUNNING" "limit=1" "appId.like=${_AGAVE_APP}-${uname}*" >$tmp 2>/dev/null
+    local nbsrv=
+
+    if [ $? == 0 ]
     then
-        echo "Currently running: $nbsrv"
-    else
-        echo "No ${_AGAVE_APP} for $uname are running"
+        nbsrv=$(jq -r .[].id $tmp)
+        if [ ! -z "$nbsrv" ];
+        then
+            started=$(jq -r .[].startTime $tmp)
+            name=$(jq -r .[].name $tmp)
+            status=$(jq -r .[].status $tmp)
+            rm $tmp
+            echo "Name: $name"
+            echo "Session ID: $nbsrv"
+            echo "Started up: $started"
+            echo "Status: $status"
+            exit 0
+        fi
     fi
+    
+    echo "No ${_AGAVE_APP} for $uname are running"
 }
 
 function do_start() {
@@ -162,16 +176,39 @@ EOF
 
     if [ "$DEBUG" == 1 ]
     then
-        cat "$HOME/.agave/${_AGAVE_APP}.json"
+        cat "$HOME/.agave/${_AGAVE_APP}.json" && \
+        exit 0
     fi
 
-    #local _job=$(jobs-submit -v -F $HOME/.agave/${_AGAVE_APP}.json | jq -r .id)
+    local _job=$(jobs-submit -v -F $HOME/.agave/${_AGAVE_APP}.json | jq -r .id)
+    if [ -z "${_job}" ]
+    then
+        echo "Launching Notebook Server session $_job"
+    fi
+
+}
+
+function do_stop() {
+
+    JOBID=$1
+
+    if [ ! -z "$JOBID" ]
+    then
+        jobs-stop $JOBID >/dev/null 2>&1
+    else
+        do_usage
+    fi
+
+    if [ $? == 0 ]
+    then
+        echo "Notebook Server $JOBID shutting down..."
+    fi
 
 }
 
 function refresh_auth() {
 
-    auth-tokens-refresh -S > /dev/null 2>&1
+    auth-tokens-refresh -S >/dev/null 2>&1
     if [ ! $? == 0 ]
     then
         log "Your API credentials have expired. We will now ask for your password to restore them..."
@@ -207,9 +244,12 @@ case $CMD in
     stop)
         shift
         NBID=$1
-        do_stop "$NBID"
+        do_stop $NBID
         ;;
     *)
         do_usage
         ;;
 esac
+
+
+# I love dogs, I've always loved dogs.
