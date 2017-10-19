@@ -92,7 +92,7 @@ function do_list() {
 
     local uname=$(_get_username)
     local tmp=$(mktemp)
-    jobs-search -v "status=RUNNING" "limit=1" "appId.like=${_AGAVE_APP}-${uname}*" >$tmp 2>/dev/null
+    jobs-search -v 'status.in=PENDING,STAGING_INPUTS,STAGING_JOB,QUEUED,RUNNING,SUBMITTING,PROCESSING_INPUTS' "limit=1" "appId.like=${_AGAVE_APP}-${uname}*" >$tmp 2>/dev/null
     local nbsrv=
 
     if [ $? == 0 ]
@@ -151,10 +151,12 @@ if [ -z "${jobname}" ]
 then
     jobname="${_AGAVE_APP} [$(date -u +"%Y-%m-%dT%H:%M:%SZ")]"
 fi
+# [TODO] Basic email validation
 if [ -z "${email}" ]
 then
     email=$(_get_email)
 fi
+# [TODO] Validate duration conforms at least to 00:00:00
 if [ -z "${duration}" ]
 then
     duration="08:00:00"
@@ -181,7 +183,7 @@ EOF
     fi
 
     local _job=$(jobs-submit -v -F $HOME/.agave/${_AGAVE_APP}.json | jq -r .id)
-    if [ -z "${_job}" ]
+    if [ ! -z "${_job}" ]
     then
         echo "Launching Notebook Server session $_job"
     fi
