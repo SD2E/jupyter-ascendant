@@ -215,7 +215,9 @@ EOF
     local _job=$(jobs-submit -v -F ${_AGAVE_STORE}/${_AGAVE_APP}.json | jq -r .id)
     if [ ! -z "${_job}" ]
     then
-        echo "Launching Notebook Server session $_job"
+        echo "Launching Notebook Server ${_job}"
+        echo "You will be notified at ${email} when it's ready with instructions on how to access it."
+
     fi
 
 }
