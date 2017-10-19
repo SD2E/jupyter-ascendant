@@ -1,0 +1,215 @@
+#!/usr/bin/env bash
+
+CMD=$1
+NOTEBOOK=$2
+DEBUG=${JPY_DEBUG}
+
+function log(){
+    mesg "INFO" $@
+}
+
+function debug(){
+    if [ "$DEBUG" == 1 ]
+    then
+        mesg "DEBUG" $@
+    fi
+}
+
+function die() {
+    mesg "ERROR" $@
+    exit 1
+}
+
+function fail() {
+    echo "$@" >&2
+    exit 1
+}
+
+function mesg() {
+    lvl=$1
+    shift
+    message=$@
+    echo "[$lvl] $(utc_date) - $message" >&2
+}
+
+function utc_date() {
+    echo $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+}
+
+function _get_username() {
+    
+    local uname=$1
+    
+    debug "_get_username"
+    if [ ! -f "$HOME/.agave/current" ]
+    then
+        die "Agave API client not installed or configured"
+    fi
+
+    uname=$(jq -r .username "$HOME/.sd2e_profile.json")
+
+    echo $uname
+}
+
+function _get_email() {
+
+    debug "_get_email: $uname"
+    
+    local uname=$1
+
+    if [ -z "$uname" ]
+    then
+        uname=$(_get_username)
+    fi
+    
+    if [ ! -f "$HOME/.agave/profiles-list-me.json" ]
+    then
+        profiles-list -v me > "$HOME/.agave/profiles-list-me.json"
+    fi
+
+    email=$(jq -r .email "$HOME/.agave/profiles-list-me.json")
+
+    echo $email
+}
+
+function get_help() {
+
+    echo "Request assistance from the SD2E team at support@sd2e.org"
+    exit 1
+}
+
+function do_usage() {
+   echo -e "usage: $_THIS command options\n"
+   echo -e "  $_THIS show - Print your Notebook Server's Session ID"
+   echo -e "  $_THIS start -n NAME -e EMAIL -d DURATION --archive : Launch a Notebook Server"
+   echo -e "  $_THIS stop <Session ID> - Shut down your Notebook Server\n"
+   echo -e "Version: $VERSION | Help: support@sd2e.org"
+}
+
+function do_list() {
+
+    debug "do_list"
+
+    local uname=$(_get_username)
+    local nbsrv=$(jobs-search -v "limit=1" "appId.like=${_AGAVE_APP}-${uname}*" | jq -r .[].id | grep -v "^.$")
+    
+    if [ ! -z "$nbsrv" ]
+    then
+        echo "Currently running: $nbsrv"
+    else
+        echo "No ${_AGAVE_APP} for $uname are running"
+    fi
+}
+
+function do_start() {
+
+    debug "do_start"
+
+    refresh_auth
+    local uname=$(_get_username)
+    local archive="false"
+
+    while getopts ":ae:n:d:" opt; do
+      case "${opt}" in
+        e )
+          email="$OPTARG"
+          ;;
+        n )
+          jobname="$OPTARG"
+          ;;
+        d )
+          duration="$OPTARG"
+          ;;
+        a )
+          archive="true"
+          ;;
+        \? )
+          echo "Invalid option: $OPTARG" 1>&2
+          ;;
+        : )
+          echo "Invalid option: $OPTARG requires an argument" 1>&2
+          ;;
+      esac
+    done
+
+
+if [ -z "${jobname}" ]
+then
+    jobname="${_AGAVE_APP} [$(date -u +"%Y-%m-%dT%H:%M:%SZ")]"
+fi
+if [ -z "${email}" ]
+then
+    email=$(_get_email)
+fi
+if [ -z "${duration}" ]
+then
+    duration="08:00:00"
+fi
+
+cat << EOF > "$HOME/.agave/${_AGAVE_APP}.json"
+{
+  "name": "${jobname}",
+  "appId": "${_AGAVE_APP}-${uname}-${VERSION}",
+  "maxRunTime": "$duration",
+  "archive": ${archive},
+  "inputs": {
+  },
+  "parameter": {
+    "email": "$email"
+  }
+}
+EOF
+
+    if [ "$DEBUG" == 1 ]
+    then
+        cat "$HOME/.agave/${_AGAVE_APP}.json"
+    fi
+
+    #local _job=$(jobs-submit -v -F $HOME/.agave/${_AGAVE_APP}.json | jq -r .id)
+
+}
+
+function refresh_auth() {
+
+    auth-tokens-refresh -S > /dev/null 2>&1
+    if [ ! $? == 0 ]
+    then
+        log "Your API credentials have expired. We will now ask for your password to restore them..."
+        auth-tokens-create -S
+        if [ ! $? == 0 ]
+        then
+            log "Authentication was unsuccessful. Try re-rerunning $_THIS $CMD again or seeking assistance."
+            get_help
+        fi
+   fi
+   return 0
+}
+
+_THIS=$(basename $0)
+VERSION=0.1.0
+_AGAVE_APP="jupyter-singularity-maverick"
+UTIL_DIR=
+if [[ -z "$UTIL_DIR" ]]; then
+    UTIL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+fi
+
+case $CMD in
+    usage)
+        do_usage
+        ;;
+    show)
+        do_list
+        ;;
+    start)
+        shift
+        do_start "$@"
+        ;;
+    stop)
+        shift
+        NBID=$1
+        do_stop "$NBID"
+        ;;
+    *)
+        do_usage
+        ;;
+esac

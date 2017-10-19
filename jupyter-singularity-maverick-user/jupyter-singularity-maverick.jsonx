@@ -1,0 +1,105 @@
+{
+    "available": true,
+    "checkpointable": false,
+    "defaultMemoryPerNode": 1,
+    "defaultProcessorsPerNode": 1,
+    "defaultNodeCount": 1,
+    "defaultQueue": "gpgpu-k80",
+    "deploymentPath": "/apps/jupyter-singularity-maverick-user",
+    "deploymentSystem": "data-sd2e-app-assets",
+    "executionSystem": "hpc-tacc-maverick-${TACCUSERNAME}",
+    "executionType": "HPC",
+    "helpURI": "http://jupyter.org/",
+    "label": "HPC Jupyter Notebook - Maverick",
+    "shortDescription": "Creates an interactive jupyter notebook on the Maverick HPC system  and emails connection details.",
+    "longDescription": "",
+    "modules": ["load tacc-singularity", "load python"],
+    "name": "${BASENAME}",
+    "ontology": [
+        "http://sswapmeet.sswap.info/agave/apps/Application"
+    ],
+    "parallelism": "SERIAL",
+    "tags": [
+        "python",
+        "jupyter",
+        "singularity",
+        "interactive",
+        "maverick"
+    ],
+    "templatePath": "wrapper.sh",
+    "testPath": "test/test.sh",
+    "version": "0.1.0",
+    "inputs": [
+        {
+            "id": "inputFiles",
+            "value": {
+                "default": "",
+                "order": 0,
+                "required": false,
+                "validator": "",
+                "visible": true
+            },
+            "semantics": {
+                "ontology": [
+                    ""
+                ],
+                "minCardinality": 1,
+                "maxCardinality": -1,
+                "fileTypes": [
+                    "raw-0"
+                ]
+            },
+            "details": {
+                "description": "",
+                "label": "All files listed will be copied to the notebook's home directory",
+                "argument": null,
+                "showArgument": false
+            }
+        }
+    ],
+    "parameters": [
+        {
+            "id": "email",
+            "value": {
+                "default": "",
+                "required": true,
+                "type": "string",
+                "validator": "",
+                "visible": true
+            },
+            "semantics": {
+                "ontology": [
+                    "xs:string"
+                ]
+            },
+            "details": {
+                "description": null,
+                "label": "Once the notebook is ready, the password and connection instructions will be sent here.",
+                "argument": null,
+                "showArgument": false
+            }
+        },
+        {
+            "id": "containerImage",
+            "value": {
+                "default": "/work/03076/gzynda/public/apps/singularity-sd2e/sd2e_jupyteruser-sd2e_devel.img",
+                "required": true,
+                "type": "string",
+                "validator": "",
+                "visible": false
+            },
+            "semantics": {
+                "ontology": [
+                    "xs:string"
+                ]
+            },
+            "details": {
+                "description": null,
+                "label": "Optional. Specifying a container image here will override the default Jupyter image.",
+                "argument": null,
+                "showArgument": false
+            }
+        }
+    ],
+    "outputs": []
+}
