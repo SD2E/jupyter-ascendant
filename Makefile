@@ -15,5 +15,5 @@ install:
 
 .PHONY: install-user
 install-user:
-	mkdir -p $HOME/bin 
-	install bin/sd2e-jupyter $HOME/bin
+	mkdir -p \$HOME/cli/bin 
+	install bin/sd2e-jupyter \$HOME/cli/bin
