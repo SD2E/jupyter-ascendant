@@ -4,9 +4,14 @@
 
 This program helps you launch and manage a powerful Jupyter Notebook running on a full node of TACC's [Maverick][6] analytics cluster. Each Maverick node has twin 10-core Intel Xeon E5-2680 v2 Ivy Bridge, 256 GB RAM, and a Tesla K40 GPU, and is attached to TACC's Stockyard global WORK filesystem. 
 
-Once installed, you can launch notebook using `sd2e-jupyter start` as described below. You will get an email at your email address on file with your TACC user account when the server is ready. You can check the status of your server with `sd2e-jupyter show` and shut it down before its default maximum duration of 8 hours in order to conserve resources. 
+Once installed, you can launch notebook using `sd2e-jupyter start`. You may, but aren't required to, pass:
+* `-a` Name of the Notebook Session (defaults to something boring and sensible)
+* `-d` Maximum duration for the session as hh:mm:ss (defaults to 08:00:00, max 12:00:00)
+* `-e` Email address for notification when your server is ready (defaults to your TACC profile address)
 
-Your environment will be as close as possible to the one provided in the Jupyter Hub environment. Its capabilities are documented at the [Github repo for the SD2E base image][7].
+Once you've submitted a notebook request, you will get an email notification when it is ready. You can check the status of your server with `sd2e-jupyter show` and shut it down before its maximum duration in order to conserve resources. 
+
+Your HPC-powered notebook environment will be as close as possible to the one provided in the Jupyter Hub environment. Its capabilities are documented at the [Github repo for the SD2E base image][7].
 
 ## Installation of SD2E Jupyter Hub
 
@@ -26,10 +31,10 @@ sd2e-jupyter usage
 usage: sd2e-jupyter command options
 
   sd2e-jupyter show : Show details about your Notebook Server
-  sd2e-jupyter start -n NAME -e EMAIL -d DURATION --archive : Launch a Notebook Server
+  sd2e-jupyter start (-n "NAME") (-e EMAIL) (-d DURATION) : Launch a Notebook Server
   sd2e-jupyter stop <Session ID> : Shut down your Notebook Server
 
-Version: 0.1.0 | Get help at support@sd2e.org
+Version: 0.1.1 | Get help at support@sd2e.org
 
 ```
 
