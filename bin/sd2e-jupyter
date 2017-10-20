@@ -81,7 +81,7 @@ function get_help() {
 function do_usage() {
    echo -e "\nusage: $_THIS command options\n"
    echo -e "  $_THIS show : Show details about your Notebook Server"
-   echo -e "  $_THIS start (-n NAME) (-e EMAIL) (-d DURATION) (--archive) : Launch a Notebook Server"
+   echo -e "  $_THIS start (-n \"NAME\") (-e EMAIL) (-d DURATION hh:mm:ss ) : Launch a Notebook Server"
    echo -e "  $_THIS stop <Session ID> : Shut down your Notebook Server\n"
    echo -e "Version: $VERSION | Get help at support@sd2e.org\n"
 
@@ -266,7 +266,7 @@ _THIS=$(basename $0)
 _AGAVE_AUTH="$HOME/.agave"
 _AGAVE_STORE="$HOME/.sd2e.org"
 _AGAVE_APP="jupyter-singularity-maverick"
-VERSION=0.1.0
+VERSION=0.1.1
 UTIL_DIR=
 if [[ -z "$UTIL_DIR" ]]; then
     UTIL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
