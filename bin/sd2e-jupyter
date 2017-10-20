@@ -266,7 +266,7 @@ _THIS=$(basename $0)
 _AGAVE_AUTH="$HOME/.agave"
 _AGAVE_STORE="$HOME/.sd2e.org"
 _AGAVE_APP="jupyter-singularity-maverick"
-VERSION=0.1.1
+VERSION=0.1.0
 UTIL_DIR=
 if [[ -z "$UTIL_DIR" ]]; then
     UTIL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
