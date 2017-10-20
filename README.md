@@ -15,9 +15,9 @@ Until we release this capability more broadly in the SD2E Jupyter environment:
 In your **Jupyter Terminal**
 
 ```
-wget -q "https://github.com/SD2E/sd2e-jupyter-ascending/archive/0.1.0.tar.gz"
-tar xf 0.1.0.tar.gz
-cd sd2e-jupyter-ascending-0.1.0
+wget -q "https://github.com/SD2E/sd2e-jupyter-ascending/archive/0.1.1.tar.gz"
+tar xf 0.1.1.tar.gz
+cd sd2e-jupyter-ascending-0.1.1
 make install-user
 hash -r
 
