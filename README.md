@@ -31,14 +31,14 @@ sd2e-jupyter usage
 usage: sd2e-jupyter command options
 
   sd2e-jupyter show : Show details about your Notebook Server
-  sd2e-jupyter start (-n "NAME") (-e EMAIL) (-d DURATION) : Launch a Notebook Server
+  sd2e-jupyter start (-n "NAME") (-e EMAIL) (-d DURATION hh:mm:ss ) : Launch a Notebook Server
   sd2e-jupyter stop <Session ID> : Shut down your Notebook Server
 
 Version: 0.1.1 | Get help at support@sd2e.org
 
 ```
 
-Please note this will not be persistent beyond the current SD2E Jupyter Notebook Server session. You can copy the `sd2e-jupyter` code from `/home/jupyter/bin` to anywhere you wish on `/home/jupyter/tacc-work` and point your `$PATH` at it to enable persistent installation. 
+Please note this installation will not be persistent beyond the current SD2E Jupyter Notebook Server session. You can copy the `sd2e-jupyter` code from `/home/jupyter/bin` to anywhere you wish on `/home/jupyter/tacc-work` and point your `$PATH` at it to enable persistent installation. 
 
 ## Local installation
 
