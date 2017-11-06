@@ -1,4 +1,4 @@
-# jupyter-hpc
+# hpc-jupyter
 
 ## Purpose and Usage
 
@@ -15,25 +15,30 @@ Until we release this capability more broadly in the SD2E Jupyter environment:
 In your **Jupyter Terminal**
 
 ```
-wget -q "https://github.com/SD2E/jupyter-ascendant/archive/0.1.1.tar.gz"
-tar xf 0.1.1.tar.gz
-cd jupyter-hpc-ascending-0.1.1
+wget -q "https://github.com/SD2E/jupyter-ascendant/archive/0.2.0.tar.gz"
+tar xf 0.2.0.tar.gz
+cd jupyter-hpc-ascending-0.2.0
 make install-user
 hash -r
 
-jupyter-hpc usage
+hpc-jupyter usage
 
-usage: jupyter-hpc command options
+hpc-jupyter [COMMAND] [OPTIONS]...
 
-  jupyter-hpc show : Show details about your Notebook Server
-  jupyter-hpc start -n NAME -e EMAIL -d DURATION --archive : Launch a Notebook Server
-  jupyter-hpc stop <Session ID> : Shut down your Notebook Server
+Launch and manage HPC-enabled Jupyter Notebooks. 
 
-Version: 0.2.0 | Get help at support@sd2e.org
+Commands:
+  hpc-jupyter show : Show details about your Notebook Server
+  hpc-jupyter start : Launch a new HPC-powered Notebook Server
+      options: -d DURATION (Optional. Defaults to 08:00:00)
+               -e EMAIL (Optional. Defaults to TACC account email)
+  hpc-jupyter stop <Session ID> : Shut down your Notebook Server
+
+Help: support@sd2e.org
 
 ```
 
-Please note this will not be persistent beyond the current SD2E Jupyter Notebook Server session. You can copy the `jupyter-hpc` code from `/home/jupyter/bin` to anywhere you wish on `/home/jupyter/tacc-work` and point your `$PATH` at it to enable persistent installation. 
+Please note this will not be persistent beyond the current SD2E Jupyter Notebook Server session. You can copy the `hpc-jupyter` code from `/home/jupyter/bin` to anywhere you wish on `/home/jupyter/tacc-work` and point your `$PATH` at it to enable persistent installation. 
 
 ## Local installation
 
