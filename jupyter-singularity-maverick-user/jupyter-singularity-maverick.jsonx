@@ -5,16 +5,16 @@
     "defaultProcessorsPerNode": 1,
     "defaultNodeCount": 1,
     "defaultQueue": "gpgpu-k80",
-    "deploymentPath": "/apps/jupyter-singularity-maverick-user",
-    "deploymentSystem": "data-sd2e-app-assets",
-    "executionSystem": "hpc-tacc-maverick-${TACCUSERNAME}",
+    "deploymentPath": "vaughn/apps/jupyter-singularity-maverick-user",
+    "deploymentSystem": "data-sd2e-projects-users",
+    "executionSystem": "hpc-tacc-maverick-vaughn",
     "executionType": "HPC",
     "helpURI": "http://jupyter.org/",
     "label": "HPC Jupyter Notebook - Maverick",
-    "shortDescription": "Creates an interactive jupyter notebook on the Maverick HPC system  and emails connection details.",
+    "shortDescription": "Creates an interactive jupyter notebook on the Maverick HPC system and emails connection details when ready.",
     "longDescription": "",
     "modules": ["load tacc-singularity", "load python"],
-    "name": "${BASENAME}",
+    "name": "jupyter-singularity-maverick-user",
     "ontology": [
         "http://sswapmeet.sswap.info/agave/apps/Application"
     ],
@@ -28,7 +28,7 @@
     ],
     "templatePath": "wrapper.sh",
     "testPath": "test/test.sh",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "inputs": [
         {
             "id": "inputFiles",

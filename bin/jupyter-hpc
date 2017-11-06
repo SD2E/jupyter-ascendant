@@ -72,6 +72,44 @@ function _get_email() {
     echo $email
 }
 
+function _get_data_tacc_work_root() {
+    
+    debug "_get_data_tacc_work_root"
+    mkdir -p "${_AGAVE_STORE}"
+
+    local uname=$1
+    if [ -z "$uname" ]
+    then
+        uname=$(_get_username)
+    fi
+    
+    if [ ! -f "${_AGAVE_STORE}/data_tacc_work.json" ]
+    then
+        systems-list -v -S data-tacc-work-${uname} > "${_AGAVE_STORE}/data_tacc_work.json"
+    fi
+
+    local workdir=$(jq -r .storage.rootDir ${_AGAVE_STORE}/data_tacc_work.json)
+
+    echo $workdir
+}
+
+function _get_data_tacc_home() {
+
+    debug "_get_data_tacc_work_root"
+
+    local uname=$1
+    if [ -z "$uname" ]
+    then
+        uname=$(_get_username)
+    fi
+
+    local workrootdir=$(_get_data_tacc_work_root $uname)
+    local homedir=${workrootdir/work/home}
+
+    echo $homedir
+
+}
+
 function get_help() {
 
     echo "Request assistance from the SD2E team at support@sd2e.org"
@@ -81,9 +119,11 @@ function get_help() {
 function do_usage() {
    echo -e "\nusage: $_THIS command options\n"
    echo -e "  $_THIS show : Show details about your Notebook Server"
-   echo -e "  $_THIS start (-n NAME) (-e EMAIL) (-d DURATION) (--archive) : Launch a Notebook Server"
+   echo -e "  $_THIS start (-n NAME) (-e EMAIL) (-d DURATION hh:mm:ss) : Launch a Notebook Server"
    echo -e "  $_THIS stop <Session ID> : Shut down your Notebook Server\n"
    echo -e "Version: $VERSION | Get help at support@sd2e.org\n"
+
+   debug "Debugging: ON"
 
    _do_deps_check
 }
@@ -208,16 +248,17 @@ EOF
 
     if [ "$DEBUG" == 1 ]
     then
-        cat "${_AGAVE_STORE}/${_AGAVE_APP}.json" && \
-        exit 0
+        cat "${_AGAVE_STORE}/${_AGAVE_APP}.json"
     fi
+
+    # Ship API keys to Maverick $STOCKYARD
+    do_configure_api_client
 
     local _job=$(jobs-submit -v -F ${_AGAVE_STORE}/${_AGAVE_APP}.json | jq -r .id)
     if [ ! -z "${_job}" ]
     then
-        echo "Launching Notebook Server ${_job}"
+        echo "Launching Notebook Server ${_job} ..."
         echo "You will be notified at ${email} when it's ready with instructions on how to access it."
-
     fi
 
 }
@@ -236,6 +277,21 @@ function do_stop() {
     if [ $? == 0 ]
     then
         echo "Notebook Server $JOBID shutting down..."
+    fi
+
+}
+
+function do_configure_api_client() {
+
+    local uname=$(_get_username)
+
+    log "Configuring TACC Cloud API client on remote host..."
+
+    if [ -f "${_AGAVE_AUTH}/current" ]
+    then
+        debug "Uploading..."
+        files-upload -q -S data-tacc-work-${uname} -F "${_AGAVE_AUTH}/current" -N ".sd2e.agave.current" /
+        debug "Done..."
     fi
 
 }
@@ -266,7 +322,8 @@ _THIS=$(basename $0)
 _AGAVE_AUTH="$HOME/.agave"
 _AGAVE_STORE="$HOME/.sd2e.org"
 _AGAVE_APP="jupyter-singularity-maverick"
-VERSION=0.1.0
+VERSION=0.2.0
+
 UTIL_DIR=
 if [[ -z "$UTIL_DIR" ]]; then
     UTIL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

@@ -1,15 +1,36 @@
 #!/bin/bash
 
 EMAIL_ADDRESS=${email}
-SESSION_FILE="$STOCKYARD/delete_me_to_end_session"
+# Needs to be threadsafe to allow multiple 
+# notebook jobs to be in flight or active
+SESSION_FILE="$STOCKYARD/delete_me_to_end_session.${AGAVE_JOB_ID}"
+
+_AGAVE_CLIENT="$STOCKYARD/.sd2e.agave.current"
+_AGAVE_AUTH="$HOME/.agave"
 
 # make sure the Python and Singularity modules are loaded
 ml TACC
 ml python
 ml tacc-singularity
 
-# create password
-export PASSWORD=`date | md5sum | cut -c-32`
+# Boostrap TACC Cloud client config from hub or sd2e-cli
+if [ -e "${_AGAVE_CLIENT}" ]
+then
+    mkdir -p "${_AGAVE_AUTH}"
+    if [ ! -e "${_AGAVE_AUTH}/current" ]
+    then
+        echo "API Client not found. Installing one..."
+        cp "${_AGAVE_CLIENT}" "${_AGAVE_AUTH}/current"
+    # Install client if it's newer than one we detect
+    elif test "${_AGAVE_CLIENT}" -nt "${_AGAVE_AUTH}/current"
+    then
+        echo "Existing API client older than session. Installing newer..."
+        cp "${_AGAVE_CLIENT}" "${_AGAVE_AUTH}/current"
+    fi
+fi
+
+# Create a strong password
+export PASSWORD=`< /dev/urandom tr -dc A-Za-z0-9 | head -c32`
 
 # run notebook in background
 LOCAL_IPY_PORT=8888
@@ -29,10 +50,24 @@ for i in `seq 3`; do
 done
 
 # send email notification
-echo Your notebook is now running at http://$NODE_HOSTNAME_DOMAIN:$LOGIN_IPY_PORT with the password $PASSWORD | mailx -s "Jupyter notebook now running" $EMAIL_ADDRESS
+ftmp=$(mktemp)
+
+cat << EOM > ${ftmp}
+Your HPC-enabled Jupyter Notebook is now availabe for use.
+
+Access it at http://maverick.tacc.utexas.edu:$LOGIN_IPY_PORT
+Your notebook password is: $PASSWORD
+
+Get help at support@sd2e.org
+
+EOM
+
+mailx -s "Your SD2E Jupyter Notebook is now available" "$EMAIL_ADDRESS" < ${ftmp} && \
+rm -f ${ftmp}
 
 # use file to kill job if necessary. This is TACC specific right now.
 echo $NODE_HOSTNAME_LONG $IPYTHON_PID > $SESSION_FILE
 while [ -f $SESSION_FILE ] ; do
     sleep 10
 done
+
